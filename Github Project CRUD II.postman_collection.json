@@ -1,0 +1,382 @@
+{
+	"info": {
+		"_postman_id": "b294741d-2192-4f7b-878a-21f4c1991143",
+		"name": "Github Project CRUD II",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Create user project",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const projectName = pm.variables.get(\"projectName\");\r",
+							"const jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.test(`Create project '${projectName}' returns 201`, function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(`Response contains project with name: '${projectName}'`, function () {\r",
+							"    pm.expect(jsonResponse.name).to.eql(projectName)\r",
+							"});\r",
+							"\r",
+							"pm.test(`The newly created project '${projectName}' has an id`, function () {\r",
+							"    pm.expect(jsonResponse.id).to.exist;\r",
+							"    pm.collectionVariables.set(\"projectId\", jsonResponse.id);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"{{projectName}}\",\r\n    \"body\": \"{{projectDescription}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gitHubApiUrl}}/user/projects",
+					"host": [
+						"{{gitHubApiUrl}}"
+					],
+					"path": [
+						"user",
+						"projects"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read project",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const projectName = pm.variables.get(\"projectName\");\r",
+							"const projectDescription = pm.variables.get(\"projectDescription\");\r",
+							"\r",
+							"pm.test(`Get project '${projectName}' returns 200`, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.test(`Response contains project with name: '${projectName}'`, function () {\r",
+							"    pm.expect(jsonResponse.name).to.eql(projectName)\r",
+							"});\r",
+							"\r",
+							"pm.test(`Response contains project with body: '${projectDescription}'`, function () {\r",
+							"    pm.expect(jsonResponse.name).to.eql(projectName)\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"url": {
+					"raw": "{{gitHubApiUrl}}/projects/{{projectId}}",
+					"host": [
+						"{{gitHubApiUrl}}"
+					],
+					"path": [
+						"projects",
+						"{{projectId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read projects",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const projectName = pm.variables.get(\"projectName\");\r",
+							"const projectDescription = pm.variables.get(\"projectDescription\");\r",
+							"const jsonResponse = pm.response.json();\r",
+							"const projectId = pm.variables.get(\"projectId\");\r",
+							"let project;\r",
+							"\r",
+							"pm.test(`List project '${projectName}' returns 200`, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(`Project list contains the newly created project '${projectName}'`, function () {\r",
+							"    const filteredProjectList = jsonResponse.filter((project) => project.id === projectId);\r",
+							"    pm.expect(filteredProjectList).to.have.lengthOf(1);\r",
+							"    project = filteredProjectList[0];\r",
+							"});\r",
+							"\r",
+							"pm.test(`Project has name: '${projectName}'`, function () {\r",
+							"    pm.expect(project.body).to.eql(projectDescription)\r",
+							"});\r",
+							"\r",
+							"pm.test(`Project has body: '${projectDescription}'`, function () {\r",
+							"    pm.expect(project.body).to.eql(projectDescription)\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"url": {
+					"raw": "{{gitHubApiUrl}}/users/{{userName}}/projects",
+					"host": [
+						"{{gitHubApiUrl}}"
+					],
+					"path": [
+						"users",
+						"{{userName}}",
+						"projects"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update project",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const projectName = pm.variables.get(\"projectName\");\r",
+							"const projectDescription = pm.variables.get(\"projectDescription\");\r",
+							"const modifiedProjectName = pm.variables.get(\"modifiedProjectName\");\r",
+							"const modifiedProjectDescription = pm.variables.get(\"modifiedProjectDescription\");\r",
+							"\r",
+							"const jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.test(`Update project '${projectName}' returns 200`, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(`Response contains modified project name: '${modifiedProjectName}'`, function () {\r",
+							"    pm.expect(jsonResponse.name).to.eql(modifiedProjectName)\r",
+							"});\r",
+							"\r",
+							"pm.test(`Response contains modified project description: '${modifiedProjectDescription}'`, function () {\r",
+							"    pm.expect(jsonResponse.body).to.eql(modifiedProjectDescription)\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"name\": \"{{modifiedProjectName}}\",\r\n    \"body\": \"{{modifiedProjectDescription}}\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{gitHubApiUrl}}/projects/{{projectId}}",
+					"host": [
+						"{{gitHubApiUrl}}"
+					],
+					"path": [
+						"projects",
+						"{{projectId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete project",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const projectName = pm.variables.get(\"projectName\");\r",
+							"\r",
+							"pm.test(`Delete project '${projectName}' returns 204`, function () {\r",
+							"    pm.response.to.have.status(204);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "DELETE",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"url": {
+					"raw": "{{gitHubApiUrl}}/projects/{{projectId}}",
+					"host": [
+						"{{gitHubApiUrl}}"
+					],
+					"path": [
+						"projects",
+						"{{projectId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Read project",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const projectName = pm.variables.get(\"projectName\");\r",
+							"\r",
+							"pm.test(`Get deleted project '${projectName}' returns 404`, function () {\r",
+							"    pm.response.to.have.status(404);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"url": {
+					"raw": "{{gitHubApiUrl}}/projects/{{projectId}}",
+					"host": [
+						"{{gitHubApiUrl}}"
+					],
+					"path": [
+						"projects",
+						"{{projectId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{gitHubApiToken}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "projectName",
+			"value": "Test Project 1",
+			"type": "string"
+		},
+		{
+			"key": "projectDescription",
+			"value": "Test project created for Postman training session",
+			"type": "string"
+		},
+		{
+			"key": "modifiedProjectName",
+			"value": "Test Project 1 modified",
+			"type": "string"
+		},
+		{
+			"key": "modifiedProjectDescription",
+			"value": "Test project modified during Postman training session",
+			"type": "string"
+		},
+		{
+			"key": "projectId",
+			"value": ""
+		},
+		{
+			"key": "userName",
+			"value": "oildriller",
+			"type": "string"
+		}
+	]
+}

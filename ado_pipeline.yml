@@ -1,0 +1,33 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: "ubuntu-latest"
+
+steps:
+  - task: Npm@1
+    displayName: 'Install newman locally'
+    inputs:
+      command: 'custom'
+      verbose: true
+      customCommand: 'install newman'
+
+  - bash: |
+      npx newman \
+        run "Github Project CRUD II.postman_collection.json" \
+        -e GitHubAPI.postman_environment.json -d PostmanDemoData.csv \
+        --global-var gitHubApiToken=$GITHUB_API_TOKEN \
+        -r cli,emojitrain,junit --reporter-junit-export=postman-junit-testreport.xml
+    displayName: 'Execute Postman tests'
+    env:
+      GITHUB_API_TOKEN: $(gitHubApiToken)
+
+  - task: PublishTestResults@2
+    displayName: 'Publish test results to ADO pipeline'
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: 'JUnit'
+      testResultsFiles: '**/postman-junit-testreport.xml'
+      testRunTitle: 'Postman Tests'

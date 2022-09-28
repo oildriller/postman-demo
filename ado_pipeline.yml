@@ -17,7 +17,7 @@ steps:
   - bash: |
       npx newman \
         run "Spotify automated.postman_collection.json" \
-        -e SpotifyApi.postman_environment.json -d PostmanDemoData.csv \
+        -e SpotifyApi.postman_environment.json \
         --global-var spotifyClientId=$SPOTIFY_CLIENT_ID \
         --global-var spotifyClientSecret=$SPOTIFY_CLIENT_SECRET \
         -r cli,emojitrain,junit --reporter-junit-export=postman-junit-testreport.xml

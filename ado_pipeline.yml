@@ -16,13 +16,15 @@ steps:
 
   - bash: |
       npx newman \
-        run "Github Project CRUD II.postman_collection.json" \
-        -e GitHubAPI.postman_environment.json -d PostmanDemoData.csv \
-        --global-var gitHubApiToken=$GITHUB_API_TOKEN \
+        run "Spotify automated.postman_collection.json" \
+        -e SpotifyApi.postman_environment.json -d PostmanDemoData.csv \
+        --global-var spotifyClientId=$SPOTIFY_CLIENT_ID \
+        --global-var spotifyClientSecret=$SPOTIFY_CLIENT_SECRET \
         -r cli,emojitrain,junit --reporter-junit-export=postman-junit-testreport.xml
     displayName: 'Execute Postman tests'
     env:
-      GITHUB_API_TOKEN: $(gitHubApiToken)
+      SPOTIFY_CLIENT_ID: $(spotifyClientId)
+      SPOTIFY_CLIENT_SECRET: $(spotifyClientSecret)
 
   - task: PublishTestResults@2
     displayName: 'Publish test results to ADO pipeline'

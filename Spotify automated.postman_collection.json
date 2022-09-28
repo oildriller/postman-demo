@@ -1,0 +1,402 @@
+{
+	"info": {
+		"_postman_id": "b4516b95-88dd-42b7-a652-877c18be5826",
+		"name": "Spotify automated",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "RefreshToken",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var jsonData = pm.response.json();\r",
+							"\r",
+							"pm.collectionVariables.set(\"token\", jsonData.access_token);\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{spotifyClientSecret}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{spotifyClientId}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "grant_type",
+							"value": "refresh_token",
+							"type": "default"
+						},
+						{
+							"key": "refresh_token",
+							"value": "AQCcfpVBq5hw-X0hq1GRjW3P8OBQthSQt8q2_a955T9z2iEulzcbxwC8x6mnEbHl4sAzerc5oID4wkvvCpd4Vk1zVS9r2NKL2HoRXlVU40z3HHgSu3r6CJMPrvQQ4Gt2EjI",
+							"type": "default"
+						}
+					]
+				},
+				"url": {
+					"raw": "https://accounts.spotify.com/api/token",
+					"protocol": "https",
+					"host": [
+						"accounts",
+						"spotify",
+						"com"
+					],
+					"path": [
+						"api",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Playlist",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const playlistName = pm.variables.get(\"playlistName\");\r",
+							"const jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.test(`Create playlist '${playlistName}' returns 201`, function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});\r",
+							"\r",
+							"pm.test(`Response contains playlist with name: '${playlistName}'`, function () {\r",
+							"    pm.expect(jsonResponse.name).to.eql(playlistName)\r",
+							"});\r",
+							"\r",
+							"pm.test(`The newly created playlist '${playlistName}' has an id`, function () {\r",
+							"    pm.expect(jsonResponse.id).to.exist;\r",
+							"    pm.collectionVariables.set(\"playlistId\", jsonResponse.id);\r",
+							"});\r",
+							"\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"{{playlistName}}\",\r\n  \"public\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{spotifyApiUrl}}/users/{{username}}/playlists",
+					"host": [
+						"{{spotifyApiUrl}}"
+					],
+					"path": [
+						"users",
+						"{{username}}",
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Add song to playlist",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const songName = pm.variables.get(\"songName\");\r",
+							"pm.test(`Add song '${songName}' to playlist returns 200`, function () {\r",
+							"    pm.response.to.have.status(201);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"uris\": [\r\n    \"spotify:track:{{songId}}\"\r\n  ],\r\n  \"position\": 0\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{spotifyApiUrl}}/playlists/{{playlistId}}/tracks",
+					"host": [
+						"{{spotifyApiUrl}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlistId}}",
+						"tracks"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Playlist",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const playlistName = pm.variables.get(\"playlistName\");\r",
+							"const songName = pm.variables.get(\"songName\");\r",
+							"const playlistDescription = pm.variables.get(\"playlistDescription\");\r",
+							"\r",
+							"pm.test(`Get playlist '${playlistName}' returns 200`, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"const jsonResponse = pm.response.json();\r",
+							"\r",
+							"pm.test(`Response contains playlist with name: '${playlistName}'`, function () {\r",
+							"    pm.expect(jsonResponse.name).to.eql(playlistName)\r",
+							"});\r",
+							"\r",
+							"pm.test(`Playlist contains the song: '${songName}'`, function () {\r",
+							"    pm.expect(jsonResponse.tracks.items.map(t=>t.track.name)).to.include(songName)\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"url": {
+					"raw": "{{spotifyApiUrl}}/playlists/{{playlistId}}",
+					"host": [
+						"{{spotifyApiUrl}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlistId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Rename playlist",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const playlistName = pm.variables.get(\"playlistName\");\r",
+							"pm.test(`Rename playlist to '${playlistName}' returns is 200`, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"name\": \"{{modifiedName}}\",\r\n  \"public\": false\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{spotifyApiUrl}}/playlists/{{playlistId}}",
+					"host": [
+						"{{spotifyApiUrl}}"
+					],
+					"path": [
+						"playlists",
+						"{{playlistId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Playlists",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"const playlistName = pm.variables.get(\"modifiedName\");\r",
+							"const jsonResponse = pm.response.json();\r",
+							"const playlistId = pm.variables.get(\"playlistId\");\r",
+							"let playlist;\r",
+							"\r",
+							"pm.test(`Get playlists returns 200`, function () {\r",
+							"    pm.response.to.have.status(200);\r",
+							"});\r",
+							"\r",
+							"pm.test(`Playlists list contains the modified playlist '${playlistName}'`, function () {\r",
+							"    const filteredPlaylists = jsonResponse.items.filter((playlist) => playlist.id === playlistId);\r",
+							"    pm.expect(filteredPlaylists).to.have.lengthOf(1);\r",
+							"    playlist = filteredPlaylists[0];\r",
+							"    pm.expect(playlist.name).to.eql(playlistName);\r",
+							"});\r",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/vnd.github.v3+json"
+					}
+				],
+				"url": {
+					"raw": "{{spotifyApiUrl}}/users/{{username}}/playlists",
+					"host": [
+						"{{spotifyApiUrl}}"
+					],
+					"path": [
+						"users",
+						"{{username}}",
+						"playlists"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{token}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "playlistName",
+			"value": "New playlist",
+			"type": "default"
+		},
+		{
+			"key": "modifiedName",
+			"value": "Modified playlist",
+			"type": "default"
+		},
+		{
+			"key": "playlistId",
+			"value": ""
+		},
+		{
+			"key": "songId",
+			"value": "7BPKw4y2CX3waC8IQnQDXB",
+			"type": "default"
+		},
+		{
+			"key": "songName",
+			"value": "Honky Tonk Women - Live At The El Mocambo 1977",
+			"type": "default"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "default"
+		},
+		{
+			"key": "username",
+			"value": "olajfuro",
+			"type": "default"
+		}
+	]
+}
